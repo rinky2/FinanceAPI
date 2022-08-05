@@ -11,15 +11,15 @@ import java.util.List;
     @Service
     public interface FinanceService {
 
-        ResponseFinance<List<FinanceDTO>> getAllSalary();
+       List<FinanceDTO> getAllSalary();
 
-        ResponseFinance<FinanceDTO> getSalary(int id);
+       FinanceDTO getSalary(int id);
 
-        ResponseFinance<FinanceDTO> addSalary(FinanceDTO financeDTO) throws FileNotFoundException, IOException;
+        void addSalary(FinanceDTO financeDTO) throws FileNotFoundException, IOException;
 
-        ResponseFinance<FinanceDTO> updateSalary(int id, FinanceDTO financeDTO);
+        void updateSalary(int id, FinanceDTO financeDTO);
 
-        ResponseFinance<FinanceDTO> deleteSalary(int id);
+        void deleteSalary(int id);
 
 //        ResponseFinance<FinanceDTO> updatePartialSalary(int id, int salary);
     }

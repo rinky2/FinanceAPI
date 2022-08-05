@@ -30,7 +30,7 @@ public class FinanceServiceImpl implements FinanceService{
     private Logger LOGGER = LoggerFactory.getLogger(FinanceServiceImpl.class);
 
 
-    public ResponseFinance<List<FinanceDTO>> getAllSalary() throws ResponseStatusException {
+    public List<FinanceDTO> getAllSalary() throws ResponseStatusException {
 
         List<FinanceDTO> salary = new ArrayList();
         ResponseFinance<List<FinanceDTO>> response = new ResponseFinance<>();
@@ -39,50 +39,42 @@ public class FinanceServiceImpl implements FinanceService{
         System.out.println(salaryData);
         try {
             if (salaryData.isEmpty()) {
-                response.setBody(salary);
-                response.setStatus(200);
-                response.setMessage("No Salary in DB!");
+                LOGGER.warn("No data present!!");
             } else {
                 for (int i = 0; i < salaryData.size(); i++) {
                     FinanceDAO financedb = salaryData.get(i);
                     FinanceDTO dto = new FinanceDTO(financedb);
                     salary.add(dto);
                 }
-                response.setBody(salary);
-                response.setStatus(200);
-                response.setMessage("Salary Displayed from the Database");
+
             }
         } catch (Exception e) {
             // System.out.println("Error occured:: "+ e.getStackTrace());
             //e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Salary in Database!!");
         }
-        return response;
-
+        return salary;
     }
 
-    public ResponseFinance<FinanceDTO> getSalary(int id) {
+    public FinanceDTO getSalary(int id) {
 
-        ResponseFinance<FinanceDTO> response = new ResponseFinance<>();
+
         Optional<FinanceDAO> opt = financeRepository.findById(id);
+        FinanceDTO dto = new FinanceDTO();
         try {
             if (!opt.isPresent()) {
-                response.setMessage("Salary ID not Found!!");
+                LOGGER.info("Salary for that id not present!");
             } else {
-                FinanceDTO dto = new FinanceDTO(opt.get());
-                response.setBody(dto);
-                response.setMessage("Salary ID Data Found");
-                response.setStatus(200);
+               opt.get();
             }
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No Salary in Database");
         }
-        return response;
+            return dto;
 
     }
 
-    public ResponseFinance<FinanceDTO> addSalary(FinanceDTO financeDTO) {
-        ResponseFinance<FinanceDTO> response = new ResponseFinance<>();
+    public void addSalary(FinanceDTO financeDTO) {
         FinanceDAO financeDAO = new FinanceDAO(financeDTO);
         try {
             List<FinanceDAO> topicDb = (List<FinanceDAO>) financeRepository.findAll();
@@ -95,70 +87,42 @@ public class FinanceServiceImpl implements FinanceService{
             }
             financeRepository.save(financeDAO);
             LOGGER.info("Salary saved successfully");
-            response.setMessage("Salary Added Successfully!");
-            response.setStatus(200);
-            response.setBody(financeDTO);
 
         }
          catch (Exception e) {
             System.out.println("Exception");
         }
-        return response;
+
         }
 
-    public ResponseFinance<FinanceDTO> updateSalary(int id, FinanceDTO financeDTO) {
+    public void updateSalary(int id, FinanceDTO financeDTO) {
 
-        ResponseFinance<FinanceDTO> response = new ResponseFinance<>();
+
         Optional<FinanceDAO> db = financeRepository.findById(id);
         if (db.isPresent()) {
             FinanceDAO t = db.get();
             financeRepository.save(t);
 
             t.setSalary(financeDTO.getSalary());
-            response.setBody(financeDTO);
-            response.setMessage("Updated the Salary for ID: " + id);
-            response.setStatus(200);
+
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Salary ID Not Found!!!!");
         }
-        return response;
+
     }
 
 
- /*   public ResponseFinance<FinanceDTO> updatePartialSalary(int id, int salary) {
-        ResponseFinance<FinanceDTO> response = new ResponseFinance<>();
+    public void deleteSalary(int id) {
 
-        Optional<FinanceDAO> db = financeRepository.findById(id);
-        if (db.isPresent()) {
-            FinanceDAO financeDAO = db.get();
-//            if (salary != null)
-//                financeDAO.setSalary(salary);
-            financeRepository.save(financeDAO);
-
-            FinanceDTO dto = new FinanceDTO(db.get());
-            response.setBody(dto);
-            response.setMessage("Updated the Salary for Topic ID: " + id);
-            response.setStatus(200);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "TopicID Not Found in DB.");
-        }
-        return response;
-
-    } */
-
-    public ResponseFinance<FinanceDTO> deleteSalary(int id) {
-        ResponseFinance<FinanceDTO> response = new ResponseFinance<>();
         Optional<FinanceDAO> db = financeRepository.findById(id);
         if (db.isPresent()) {
             FinanceDTO t = new FinanceDTO(db.get());
-            response.setBody(t);
-            response.setMessage("Salary deleted for id: " + id);
-            response.setStatus(200);
+
             financeRepository.deleteById(id);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Salary ID Not Found in DB.");
         }
-        return response;
+
 
     }
 }

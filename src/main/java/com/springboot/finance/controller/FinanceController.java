@@ -8,17 +8,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class FinanceController {
 
     @Autowired //dependency injection
     private FinanceService financeService;
+
+    // Resource endpoint url of project 'EmployeeApi'
+    public static final String EMPLOYEE_URL = "http://localhost:8081/emp/";
+
 
 //    @Bean
 //    public RestTemplate getRestTemplate(){
@@ -28,39 +37,53 @@ public class FinanceController {
     @Autowired
     private RestTemplate restTemplate;
 
-    static final String EMPLOYEE_URL ="http://localhost:8081/";
-
 
     private Logger LOGGER = LoggerFactory.getLogger(FinanceController.class);
 
-    @GetMapping("/allSalary") //will be converted to json by spring mvc
-    public ResponseFinance<List<FinanceDTO>> getAllSalary()
+    @GetMapping("/salary") //will be converted to json by spring mvc
+    public ResponseEntity<List<FinanceDTO>> getAllSalary()
     {
-        FinanceDTO finance = restTemplate.exchange(EMPLOYEE_URL+"emp",HttpMethod.GET,null,FinanceDTO.class).getBody();
-        return financeService.getAllSalary();
+
+        ResponseEntity<List<FinanceDTO>> response = restTemplate.exchange(EMPLOYEE_URL, HttpMethod.GET,
+                HttpEntity.EMPTY, new ParameterizedTypeReference<List<FinanceDTO>>() {
+                });
+
+        return ResponseEntity.status(HttpStatus.OK).body(response.getBody());
+
     }
 
     @GetMapping("/salary/{id}")
-    public ResponseFinance<FinanceDTO> getTopic(@PathVariable int id){
+    public FinanceDTO getTopic(@PathVariable int id){
         return financeService.getSalary(id);
     }
 
-    @PostMapping("/addSalary")
-    public ResponseFinance<FinanceDTO> addTopic(@RequestBody FinanceDTO financeDTO) throws Exception//pick this instance from request payload
+    @PostMapping("/salary")
+    public ResponseEntity<FinanceDTO> addTopic(@RequestBody FinanceDTO financeDTO) throws Exception//pick this instance from request payload
     {
-        return financeService.addSalary(financeDTO);
+        HttpEntity<FinanceDTO> request = new HttpEntity<>(financeDTO);
+        ResponseEntity<FinanceDTO> response = restTemplate.exchange(EMPLOYEE_URL, HttpMethod.POST, request,
+                FinanceDTO.class);
+        return response;
+      // financeService.addSalary(financeDTO);
     }
 
-    @PutMapping( "/updateSalary/{id}")
-    public ResponseFinance<FinanceDTO> updateTopic(@RequestBody FinanceDTO financeDTO, @PathVariable int id)//pick this instance from request payload
+    @PutMapping( "/salary/{id}")
+    public ResponseEntity<FinanceDTO> updateTopic(@RequestBody FinanceDTO financeDTO, @PathVariable int id)//pick this instance from request payload
     {
-        return financeService.updateSalary(id, financeDTO);
+        HttpEntity<FinanceDTO> request = new HttpEntity<>(financeDTO);
+        ResponseEntity<FinanceDTO> response = restTemplate.exchange(EMPLOYEE_URL+"/"+id , HttpMethod.PUT, request,
+                FinanceDTO.class);
+        return response;
+    // financeService.updateSalary(id, financeDTO);
     }
 
-    @DeleteMapping("/deleteSalary/{id}")
-    public ResponseFinance<FinanceDTO> deleteSalary(@PathVariable int id)
+    @DeleteMapping("/salary/{id}")
+    public ResponseEntity<Map> deleteSalary(@PathVariable int id)
     {
-        return financeService.deleteSalary(id);
+        return restTemplate.exchange(EMPLOYEE_URL +"/"+id , HttpMethod.DELETE,
+                HttpEntity.EMPTY, Map.class);
+
+        //financeService.deleteSalary(id);
     }
 
 
